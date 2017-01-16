@@ -9,7 +9,7 @@
 
 ## syntax
 
-base address is an optional arg.  if no base address is specified, the command will use the base address of the valid module containing the selected address.  if the selected address is not in a valid module, the command will use the base address of the active memory region.
+Base address is an optional arg.  If no base address is specified, the command will use the base address of the valid module containing the selected address.  If the selected address is not in a valid module, the command will use the base address of the active memory region.
 
 ## command summary
 
