@@ -4,37 +4,31 @@
 #include <array>
 #include <vector>
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// constants
-//
-
-const DWORD PEHEADER_SIZE = 0x1000;
+#define PAGE_SIZE 0x1000
+#define PAGE_ALIGN(Va) ((PVOID)((ULONG_PTR)(Va) & ~(PAGE_SIZE - 1)))
+#define PE_HEADER_SIZE 0x1000
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // types
-//
 
-typedef struct _PEHeader64 {
-    BYTE rawData[PEHEADER_SIZE];
-    ULONG_PTR baseAddress = 0;
-    PIMAGE_DOS_HEADER dosHeader = nullptr;
-    PIMAGE_NT_HEADERS64 ntHeader = nullptr;
-    PIMAGE_FILE_HEADER fileHeader = nullptr;
-    PIMAGE_OPTIONAL_HEADER64 optionalHeader = nullptr;
+typedef struct _REMOTE_PE_HEADER_DATA
+{
+    ULONG_PTR baseAddress;
+    PIMAGE_DOS_HEADER dosHeader;
+    PIMAGE_NT_HEADERS ntHeader;
+    PIMAGE_FILE_HEADER fileHeader;
+    PIMAGE_OPTIONAL_HEADER optionalHeader;
     std::array<PIMAGE_DATA_DIRECTORY, IMAGE_NUMBEROF_DIRECTORY_ENTRIES> dataDirectory;
     std::vector<PIMAGE_SECTION_HEADER> sectionHeaders;
-} PEHeader64, *PPEHeader64;
+
+    BYTE rawData[PE_HEADER_SIZE];
+} REMOTE_PE_HEADER_DATA;
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-// prototypes
-//
+// ctors
 
-// round address up by alignment
-ULONG_PTR AlignAddress(ULONG_PTR Address, ULONG_PTR Alignment);
+BOOL FillPEHeaderData(ULONG_PTR BaseAddress, OUT REMOTE_PE_HEADER_DATA& PEHeader);
 
+////////////////////////////////////////////////////////////////////////////////
+// utils
 BOOL IsValidPEHeader(ULONG_PTR BaseAddress);
-
-BOOL BuildPEHeader64(ULONG_PTR BaseAddress, OUT PEHeader64& PEHeader);

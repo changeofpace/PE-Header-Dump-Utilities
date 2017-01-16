@@ -1,9 +1,5 @@
 #pragma once
 
-#ifndef _WIN64
-#error "This project does not support 32-bit yet."
-#endif
-
 #include "pluginmain.h"
 
 //plugin data

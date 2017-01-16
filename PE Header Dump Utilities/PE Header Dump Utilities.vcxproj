@@ -71,10 +71,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <TargetExt>.dp32</TargetExt>
     <OutDir>$(SolutionDir)bin\x32\</OutDir>
+    <TargetName>PEHeaderDumpUtilities</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <TargetExt>.dp32</TargetExt>
     <OutDir>$(SolutionDir)bin\x32d\</OutDir>
+    <TargetName>PEHeaderDumpUtilities</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetExt>.dp64</TargetExt>
@@ -84,6 +86,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetExt>.dp64</TargetExt>
     <OutDir>$(SolutionDir)bin\x64d\</OutDir>
+    <TargetName>PEHeaderDumpUtilities</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

@@ -13,10 +13,10 @@ base address is an optional arg.  if no base address is specified, the command w
 
 ## command summary
 
-- **pedumpHeader:** print File Header, Optional Header, Data Directories, and Section Headers to log tab.
-- **pedumpNTHeaders:** print File Header, Optional Header to log tab.
-- **pedumpDataDirectories:** print Data Directories to log tab.
-- **pedumpSections:** print Section Headers to log tab.
+- **pedumpHeader:**  print File Header, Optional Header, Data Directories, and Section Headers to log tab.
+- **pedumpNTHeaders:**  print File Header, Optional Header to log tab.
+- **pedumpDataDirectories:**  print Data Directories to log tab.
+- **pedumpSections:**  print Section Headers to log tab.
 
 ## features
 

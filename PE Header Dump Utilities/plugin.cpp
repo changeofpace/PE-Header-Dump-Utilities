@@ -3,15 +3,7 @@
 #include <time.h>
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // constants
-//
-
-static const char* delimMajor = "===============================================================================\n";
-static const char* delimMinor = "-------------------------------------------------------------------------------\n";
-
-static const char* unknownDataString = "(UNKNOWN)";
-static const char* invalidDataString = "(INVALID)";
 
 // exported command strings
 static const char* cmdDumpPEHeader = "pedumpHeader";
@@ -19,19 +11,22 @@ static const char* cmdDumpNTHeaders = "pedumpNTHeaders";
 static const char* cmdDumpDataDirectories = "pedumpDataDirectories";
 static const char* cmdDumpSections = "pedumpSections";
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// types
-//
+static const char* delimMajor = "===============================================================================\n";
+static const char* delimMinor = "-------------------------------------------------------------------------------\n";
 
-enum {
+static const char* unknownDataString = "(UNKNOWN)";
+static const char* invalidDataString = "(INVALID)";
+
+////////////////////////////////////////////////////////////////////////////////
+// types
+
+enum 
+{
     PLUGIN_MENU_ABOUT,
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // prototypes
-//
 
 // required x64dbg plugin funcs
 bool pluginInit(PLUG_INITSTRUCT* initStruct);
@@ -48,10 +43,10 @@ bool cbDumpDataDirectories(int argc, char* argv[]);
 bool cbDumpSections(int argc, char* argv[]);
 
 // dump
-void DumpPEHeader(const PEHeader64& PEHeader);
-void DumpNTHeaders(const PEHeader64& PEHeader);
-void DumpDataDirectories(const PEHeader64& PEHeader);
-void DumpSections(const PEHeader64& PEHeader);
+void DumpPEHeader(const REMOTE_PE_HEADER_DATA& PEHeader);
+void DumpNTHeaders(const REMOTE_PE_HEADER_DATA& PEHeader);
+void DumpDataDirectories(const REMOTE_PE_HEADER_DATA& PEHeader);
+void DumpSections(const REMOTE_PE_HEADER_DATA& PEHeader);
 
 // utils
 duint GetSelectedAddress();
@@ -71,14 +66,7 @@ void PrintImageDllCharacteristics(WORD DllCharacteristics);
 void PrintImageSectionCharacteristics(DWORD Characteristics);
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-// implementations
-//
-
-////////////////////////////////////////////////////////////////////////////////
-//
 // required x64dbg plugin funcs
-//
 
 bool pluginInit(PLUG_INITSTRUCT* initStruct)
 {
@@ -118,9 +106,7 @@ void pluginSetup()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // plugin exports
-//
 
 PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
 {
@@ -136,9 +122,7 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // added commands
-//
 
 // dump entire PE header
 bool cbDumpPEHeader(int argc, char* argv[])
@@ -149,9 +133,9 @@ bool cbDumpPEHeader(int argc, char* argv[])
         return false;
     }
 
-    PEHeader64 pe;
+    REMOTE_PE_HEADER_DATA pe;
     duint ea = argc == 2 ? DbgValFromString(argv[1]) : GetEffectiveBaseAddress();
-    if (!BuildPEHeader64(ea, pe))
+    if (!FillPEHeaderData(ea, pe))
     {
         plog("[" PLUGIN_NAME "]  %p does not point to a valid PE header.\n", ea);
         return false;
@@ -170,9 +154,9 @@ bool cbDumpNTHeaders(int argc, char* argv[])
         return false;
     }
 
-    PEHeader64 pe;
+    REMOTE_PE_HEADER_DATA pe;
     duint ea = argc == 2 ? DbgValFromString(argv[1]) : GetEffectiveBaseAddress();
-    if (!BuildPEHeader64(ea, pe))
+    if (!FillPEHeaderData(ea, pe))
     {
         plog("[" PLUGIN_NAME "]  %p does not point to a valid PE header.\n", ea);
         return false;
@@ -190,9 +174,9 @@ bool cbDumpDataDirectories(int argc, char* argv[])
         return false;
     }
 
-    PEHeader64 pe;
+    REMOTE_PE_HEADER_DATA pe;
     duint ea = argc == 2 ? DbgValFromString(argv[1]) : GetEffectiveBaseAddress();
-    if (!BuildPEHeader64(ea, pe))
+    if (!FillPEHeaderData(ea, pe))
     {
         plog("[" PLUGIN_NAME "]  %p does not point to a valid PE header.\n", ea);
         return false;
@@ -210,9 +194,9 @@ bool cbDumpSections(int argc, char* argv[])
         return false;
     }
 
-    PEHeader64 pe;
+    REMOTE_PE_HEADER_DATA pe;
     duint ea = argc == 2 ? DbgValFromString(argv[1]) : GetEffectiveBaseAddress();
-    if (!BuildPEHeader64(ea, pe))
+    if (!FillPEHeaderData(ea, pe))
     {
         plog("[" PLUGIN_NAME "]  %p does not point to a valid PE header.\n", ea);
         return false;
@@ -223,18 +207,16 @@ bool cbDumpSections(int argc, char* argv[])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // dump
-//
 
-void DumpPEHeader(const PEHeader64& PEHeader)
+void DumpPEHeader(const REMOTE_PE_HEADER_DATA& PEHeader)
 {
     DumpNTHeaders(PEHeader);
     DumpDataDirectories(PEHeader);
     DumpSections(PEHeader);
 }
 
-void DumpNTHeaders(const PEHeader64& PEHeader)
+void DumpNTHeaders(const REMOTE_PE_HEADER_DATA& PEHeader)
 {
     CHAR localTime[80] = {0};
     ConvertEpochToLocalTimeString(PEHeader.fileHeader->TimeDateStamp, localTime, sizeof(localTime));
@@ -278,32 +260,45 @@ void DumpNTHeaders(const PEHeader64& PEHeader)
     plog("  Subsystem:                  %16X  %s\n", PEHeader.optionalHeader->Subsystem, OptionalHeaderSubsystemToString(PEHeader.optionalHeader->Subsystem));
     plog("  DllCharacteristics:         %16X", PEHeader.optionalHeader->DllCharacteristics);
     PrintImageDllCharacteristics(PEHeader.optionalHeader->DllCharacteristics);
+#ifdef _WIN64
     plog("  SizeOfStackReserve:         %16llX\n", PEHeader.optionalHeader->SizeOfStackReserve);
     plog("  SizeOfStackCommit:          %16llX\n", PEHeader.optionalHeader->SizeOfStackCommit);
     plog("  SizeOfHeapReserve:          %16llX\n", PEHeader.optionalHeader->SizeOfHeapReserve);
     plog("  SizeOfHeapCommit:           %16llX\n", PEHeader.optionalHeader->SizeOfHeapCommit);
+#else
+    plog("  SizeOfStackReserve:         %16X\n", PEHeader.optionalHeader->SizeOfStackReserve);
+    plog("  SizeOfStackCommit:          %16X\n", PEHeader.optionalHeader->SizeOfStackCommit);
+    plog("  SizeOfHeapReserve:          %16X\n", PEHeader.optionalHeader->SizeOfHeapReserve);
+    plog("  SizeOfHeapCommit:           %16X\n", PEHeader.optionalHeader->SizeOfHeapCommit);
+#endif
     plog("  LoaderFlags:                %16X\n", PEHeader.optionalHeader->LoaderFlags);
     plog("  NumberOfRvaAndSizes:        %16X\n", PEHeader.optionalHeader->NumberOfRvaAndSizes);
 }
 
-void DumpDataDirectories(const PEHeader64& PEHeader)
+void DumpDataDirectories(const REMOTE_PE_HEADER_DATA& PEHeader)
 {
     plog(delimMajor);
     plog("DATA DIRECTORIES\n");
     plog(delimMajor);
-    for (int i = 0; i < PEHeader.dataDirectory.size() - 1; i++)
+    for (unsigned int i = 0; i < PEHeader.dataDirectory.size() - 1; i++)
     {
         PIMAGE_DATA_DIRECTORY dataDirectory = PEHeader.dataDirectory[i];
         plog("%s\n", DataDirectoryEntryToString(i));
-        plog("  VirtualAddress:                     %8X", dataDirectory->VirtualAddress);
         if (dataDirectory->VirtualAddress > 0)
-            plog("  %p", RVA_TO_ADDR(PEHeader.baseAddress, dataDirectory->VirtualAddress));
-        plog("\n");
+#ifdef _WIN64
+            plog("  VirtualAddress:             %p  %X\n", RVA_TO_ADDR(PEHeader.baseAddress, dataDirectory->VirtualAddress), dataDirectory->VirtualAddress);
+        else
+            plog("  VirtualAddress:             %16X\n", 0);
+#else
+            plog("  VirtualAddress:                     %p  %X\n", RVA_TO_ADDR(PEHeader.baseAddress, dataDirectory->VirtualAddress), dataDirectory->VirtualAddress);
+        else
+            plog("  VirtualAddress:                     %8X\n", 0);
+#endif
         plog("  Size:                               %8X\n", dataDirectory->Size);
     }
 }
 
-void DumpSections(const PEHeader64& PEHeader)
+void DumpSections(const REMOTE_PE_HEADER_DATA& PEHeader)
 {
     plog(delimMajor);
     plog("SECTIONS\n");
@@ -311,8 +306,12 @@ void DumpSections(const PEHeader64& PEHeader)
     for (auto sectionHeader : PEHeader.sectionHeaders)
     {
         plog("%.8s\n", sectionHeader->Name);
-        plog("  VirtualSize:                        %8X  %X\n", sectionHeader->Misc.VirtualSize, AlignAddress(sectionHeader->Misc.VirtualSize, PEHeader.optionalHeader->SectionAlignment));
-        plog("  VirtualAddress:                     %8X  %p\n", sectionHeader->VirtualAddress, RVA_TO_ADDR(PEHeader.baseAddress, sectionHeader->VirtualAddress));
+        plog("  VirtualSize:                        %8X  %X\n", sectionHeader->Misc.VirtualSize, ULONG_PTR(PAGE_ALIGN(sectionHeader->Misc.VirtualSize)) + PAGE_SIZE);
+#ifdef _WIN64
+        plog("  VirtualAddress:             %p  %X\n", RVA_TO_ADDR(PEHeader.baseAddress, sectionHeader->VirtualAddress), sectionHeader->VirtualAddress);
+#else
+        plog("  VirtualAddress:                     %p  %X\n", RVA_TO_ADDR(PEHeader.baseAddress, sectionHeader->VirtualAddress), sectionHeader->VirtualAddress);
+#endif
         plog("  SizeOfRawData:                      %8X\n", sectionHeader->SizeOfRawData);
         plog("  PointerToRawData:                   %8X\n", sectionHeader->PointerToRawData);
         plog("  PointerToRelocations:               %8X\n", sectionHeader->PointerToRelocations);
@@ -326,9 +325,7 @@ void DumpSections(const PEHeader64& PEHeader)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // utils
-//
 
 duint GetSelectedAddress()
 {
@@ -370,9 +367,7 @@ bool ConvertEpochToLocalTimeString(DWORD TimeDateStamp, char* LocalTimeString, S
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // data to string
-//
 
 const char* MachineArchitectureToString(WORD MachineCode)
 {
@@ -442,82 +437,80 @@ const char* DataDirectoryEntryToString(WORD DataDirectoryEntry)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // enumerate flags
-//
 
 void PrintImageFileCharacteristics(WORD Characteristics)
 {
-    if ((Characteristics & 0x0001) != 0) plog("  RELOCS_STRIPPED");
-    if ((Characteristics & 0x0002) != 0) plog("  EXECUTABLE_IMAGE");
-    if ((Characteristics & 0x0004) != 0) plog("  LINE_NUMS_STRIPPED");
-    if ((Characteristics & 0x0008) != 0) plog("  LOCAL_SYMS_STRIPPED");
-    if ((Characteristics & 0x0010) != 0) plog("  AGGRESIVE_WS_TRIM");
-    if ((Characteristics & 0x0020) != 0) plog("  LARGE_ADDRESS_AWARE");
-    if ((Characteristics & 0x0080) != 0) plog("  BYTES_REVERSED_LO");
-    if ((Characteristics & 0x0100) != 0) plog("  32BIT_MACHINE");
-    if ((Characteristics & 0x0200) != 0) plog("  DEBUG_STRIPPED");
-    if ((Characteristics & 0x0400) != 0) plog("  REMOVABLE_RUN_FROM_SWAP");
-    if ((Characteristics & 0x0800) != 0) plog("  NET_RUN_FROM_SWAP");
-    if ((Characteristics & 0x1000) != 0) plog("  SYSTEM");
-    if ((Characteristics & 0x2000) != 0) plog("  DLL");
-    if ((Characteristics & 0x4000) != 0) plog("  UP_SYSTEM_ONLY");
-    if ((Characteristics & 0x8000) != 0) plog("  BYTES_REVERSED_HI");
+    if ((Characteristics & IMAGE_FILE_RELOCS_STRIPPED) != 0)        plog("  RELOCS_STRIPPED");
+    if ((Characteristics & IMAGE_FILE_EXECUTABLE_IMAGE) != 0)       plog("  EXECUTABLE_IMAGE");
+    if ((Characteristics & IMAGE_FILE_LINE_NUMS_STRIPPED) != 0)     plog("  LINE_NUMS_STRIPPED");
+    if ((Characteristics & IMAGE_FILE_LOCAL_SYMS_STRIPPED) != 0)    plog("  LOCAL_SYMS_STRIPPED");
+    if ((Characteristics & IMAGE_FILE_AGGRESIVE_WS_TRIM) != 0)      plog("  AGGRESIVE_WS_TRIM");
+    if ((Characteristics & IMAGE_FILE_LARGE_ADDRESS_AWARE) != 0)    plog("  LARGE_ADDRESS_AWARE");
+    if ((Characteristics & IMAGE_FILE_BYTES_REVERSED_LO) != 0)      plog("  BYTES_REVERSED_LO");
+    if ((Characteristics & IMAGE_FILE_32BIT_MACHINE) != 0)          plog("  32BIT_MACHINE");
+    if ((Characteristics & IMAGE_FILE_DEBUG_STRIPPED) != 0)         plog("  DEBUG_STRIPPED");
+    if ((Characteristics & IMAGE_FILE_REMOVABLE_RUN_FROM_SWAP) != 0) plog("  REMOVABLE_RUN_FROM_SWAP");
+    if ((Characteristics & IMAGE_FILE_NET_RUN_FROM_SWAP) != 0)      plog("  NET_RUN_FROM_SWAP");
+    if ((Characteristics & IMAGE_FILE_SYSTEM) != 0)                 plog("  SYSTEM");
+    if ((Characteristics & IMAGE_FILE_DLL) != 0)                    plog("  DLL");
+    if ((Characteristics & IMAGE_FILE_UP_SYSTEM_ONLY) != 0)         plog("  UP_SYSTEM_ONLY");
+    if ((Characteristics & IMAGE_FILE_BYTES_REVERSED_HI) != 0)      plog("  BYTES_REVERSED_HI");
     plog("\n");
 }
 
 void PrintImageDllCharacteristics(WORD DllCharacteristics)
 {
-    if ((DllCharacteristics & 0x0040) != 0) plog("  DYNAMIC_BASE");
-    if ((DllCharacteristics & 0x0080) != 0) plog("  FORCE_INTEGRITY");
-    if ((DllCharacteristics & 0x0100) != 0) plog("  NX_COMPAT");
-    if ((DllCharacteristics & 0x0200) != 0) plog("  NO_ISOLATION");
-    if ((DllCharacteristics & 0x0400) != 0) plog("  NO_SEH");
-    if ((DllCharacteristics & 0x0800) != 0) plog("  NO_BIND");
-    if ((DllCharacteristics & 0x2000) != 0) plog("  WDM_DRIVER");
-    if ((DllCharacteristics & 0x8000) != 0) plog("  TERMINAL_SERVER_AWARE");
+    if ((DllCharacteristics & IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE) != 0)          plog("  DYNAMIC_BASE");
+    if ((DllCharacteristics & IMAGE_DLLCHARACTERISTICS_FORCE_INTEGRITY) != 0)       plog("  FORCE_INTEGRITY");
+    if ((DllCharacteristics & IMAGE_DLLCHARACTERISTICS_NX_COMPAT) != 0)             plog("  NX_COMPAT");
+    if ((DllCharacteristics & IMAGE_DLLCHARACTERISTICS_NO_ISOLATION) != 0)          plog("  NO_ISOLATION");
+    if ((DllCharacteristics & IMAGE_DLLCHARACTERISTICS_NO_SEH) != 0)                plog("  NO_SEH");
+    if ((DllCharacteristics & IMAGE_DLLCHARACTERISTICS_NO_BIND) != 0)               plog("  NO_BIND");
+    if ((DllCharacteristics & IMAGE_DLLCHARACTERISTICS_WDM_DRIVER) != 0)            plog("  WDM_DRIVER");
+    if ((DllCharacteristics & IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE) != 0) plog("  TERMINAL_SERVER_AWARE");
     plog("\n");
 }
 
 void PrintImageSectionCharacteristics(DWORD Characteristics)
 {
-    if ((Characteristics & 0x00000008) != 0) plog("  TYPE_NO_PAD");
-    if ((Characteristics & 0x00000020) != 0) plog("  CNT_CODE");
-    if ((Characteristics & 0x00000040) != 0) plog("  CNT_INITIALIZED_DATA");
-    if ((Characteristics & 0x00000080) != 0) plog("  CNT_UNINITIALIZED_DATA");
-    if ((Characteristics & 0x00000100) != 0) plog("  LNK_OTHER");
-    if ((Characteristics & 0x00000200) != 0) plog("  LNK_INFO");
-    if ((Characteristics & 0x00000800) != 0) plog("  LNK_REMOVE");
-    if ((Characteristics & 0x00001000) != 0) plog("  LNK_COMDAT");
-    if ((Characteristics & 0x00004000) != 0) plog("  NO_DEFER_SPEC_EXC");
-    if ((Characteristics & 0x00008000) != 0) plog("  GPREL");
-    if ((Characteristics & 0x00008000) != 0) plog("  MEM_FARDATA");
-    if ((Characteristics & 0x00020000) != 0) plog("  MEM_PURGEABLE");
-    if ((Characteristics & 0x00020000) != 0) plog("  MEM_16BIT");
-    if ((Characteristics & 0x00040000) != 0) plog("  MEM_LOCKED");
-    if ((Characteristics & 0x00080000) != 0) plog("  MEM_PRELOAD");
-    if ((Characteristics & 0x00100000) != 0) plog("  ALIGN_1BYTES");
-    if ((Characteristics & 0x00200000) != 0) plog("  ALIGN_2BYTES");
-    if ((Characteristics & 0x00300000) != 0) plog("  ALIGN_4BYTES");
-    if ((Characteristics & 0x00400000) != 0) plog("  ALIGN_8BYTES");
-    if ((Characteristics & 0x00500000) != 0) plog("  ALIGN_16BYTES");
-    if ((Characteristics & 0x00600000) != 0) plog("  ALIGN_32BYTES");
-    if ((Characteristics & 0x00700000) != 0) plog("  ALIGN_64BYTES");
-    if ((Characteristics & 0x00800000) != 0) plog("  ALIGN_128BYTES");
-    if ((Characteristics & 0x00900000) != 0) plog("  ALIGN_256BYTES");
-    if ((Characteristics & 0x00A00000) != 0) plog("  ALIGN_512BYTES");
-    if ((Characteristics & 0x00B00000) != 0) plog("  ALIGN_1024BYTES");
-    if ((Characteristics & 0x00C00000) != 0) plog("  ALIGN_2048BYTES");
-    if ((Characteristics & 0x00D00000) != 0) plog("  ALIGN_4096BYTES");
-    if ((Characteristics & 0x00E00000) != 0) plog("  ALIGN_8192BYTES");
-    if ((Characteristics & 0x00F00000) != 0) plog("  ALIGN_MASK");
-    if ((Characteristics & 0x01000000) != 0) plog("  LNK_NRELOC_OVFL");
-    if ((Characteristics & 0x02000000) != 0) plog("  MEM_DISCARDABLE");
-    if ((Characteristics & 0x04000000) != 0) plog("  MEM_NOT_CACHED");
-    if ((Characteristics & 0x08000000) != 0) plog("  MEM_NOT_PAGED");
-    if ((Characteristics & 0x10000000) != 0) plog("  MEM_SHARED");
-    if ((Characteristics & 0x20000000) != 0) plog("  MEM_EXECUTE");
-    if ((Characteristics & 0x40000000) != 0) plog("  MEM_READ");
-    if ((Characteristics & 0x80000000) != 0) plog("  MEM_WRITE");
+    if ((Characteristics & IMAGE_SCN_TYPE_NO_PAD) != 0)             plog("  TYPE_NO_PAD");
+    if ((Characteristics & IMAGE_SCN_CNT_CODE) != 0)                plog("  CNT_CODE");
+    if ((Characteristics & IMAGE_SCN_CNT_INITIALIZED_DATA) != 0)    plog("  CNT_INITIALIZED_DATA");
+    if ((Characteristics & IMAGE_SCN_CNT_UNINITIALIZED_DATA) != 0)  plog("  CNT_UNINITIALIZED_DATA");
+    if ((Characteristics & IMAGE_SCN_LNK_OTHER) != 0)               plog("  LNK_OTHER");
+    if ((Characteristics & IMAGE_SCN_LNK_INFO) != 0)                plog("  LNK_INFO");
+    if ((Characteristics & IMAGE_SCN_LNK_REMOVE) != 0)              plog("  LNK_REMOVE");
+    if ((Characteristics & IMAGE_SCN_LNK_COMDAT) != 0)              plog("  LNK_COMDAT");
+    if ((Characteristics & IMAGE_SCN_NO_DEFER_SPEC_EXC) != 0)       plog("  NO_DEFER_SPEC_EXC");
+    if ((Characteristics & IMAGE_SCN_GPREL) != 0)                   plog("  GPREL");
+    if ((Characteristics & IMAGE_SCN_MEM_FARDATA) != 0)             plog("  MEM_FARDATA");
+    if ((Characteristics & IMAGE_SCN_MEM_PURGEABLE) != 0)           plog("  MEM_PURGEABLE");
+    if ((Characteristics & IMAGE_SCN_MEM_16BIT) != 0)               plog("  MEM_16BIT");
+    if ((Characteristics & IMAGE_SCN_MEM_LOCKED) != 0)              plog("  MEM_LOCKED");
+    if ((Characteristics & IMAGE_SCN_MEM_PRELOAD) != 0)             plog("  MEM_PRELOAD");
+    if ((Characteristics & IMAGE_SCN_ALIGN_1BYTES) != 0)            plog("  ALIGN_1BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_2BYTES) != 0)            plog("  ALIGN_2BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_4BYTES) != 0)            plog("  ALIGN_4BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_8BYTES) != 0)            plog("  ALIGN_8BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_16BYTES) != 0)           plog("  ALIGN_16BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_32BYTES) != 0)           plog("  ALIGN_32BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_64BYTES) != 0)           plog("  ALIGN_64BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_128BYTES) != 0)          plog("  ALIGN_128BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_256BYTES) != 0)          plog("  ALIGN_256BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_512BYTES) != 0)          plog("  ALIGN_512BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_1024BYTES) != 0)         plog("  ALIGN_1024BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_2048BYTES) != 0)         plog("  ALIGN_2048BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_4096BYTES) != 0)         plog("  ALIGN_4096BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_8192BYTES) != 0)         plog("  ALIGN_8192BYTES");
+    if ((Characteristics & IMAGE_SCN_ALIGN_MASK) != 0)              plog("  ALIGN_MASK");
+    if ((Characteristics & IMAGE_SCN_LNK_NRELOC_OVFL) != 0)         plog("  LNK_NRELOC_OVFL");
+    if ((Characteristics & IMAGE_SCN_MEM_DISCARDABLE) != 0)         plog("  MEM_DISCARDABLE");
+    if ((Characteristics & IMAGE_SCN_MEM_NOT_CACHED) != 0)          plog("  MEM_NOT_CACHED");
+    if ((Characteristics & IMAGE_SCN_MEM_NOT_PAGED) != 0)           plog("  MEM_NOT_PAGED");
+    if ((Characteristics & IMAGE_SCN_MEM_SHARED) != 0)              plog("  MEM_SHARED");
+    if ((Characteristics & IMAGE_SCN_MEM_EXECUTE) != 0)             plog("  MEM_EXECUTE");
+    if ((Characteristics & IMAGE_SCN_MEM_READ) != 0)                plog("  MEM_READ");
+    if ((Characteristics & IMAGE_SCN_MEM_WRITE) != 0)               plog("  MEM_WRITE");
     plog("\n");
 }
