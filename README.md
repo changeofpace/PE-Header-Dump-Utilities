@@ -70,6 +70,3 @@ OPTIONAL HEADER
   LoaderFlags:                               0
   NumberOfRvaAndSizes:                      10
 </pre>
-
-## misc
-- currently supports x64 only.
