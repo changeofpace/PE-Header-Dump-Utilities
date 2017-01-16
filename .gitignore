@@ -1,7 +1,9 @@
 *.cache
+*.exp
 *.iobj
 *.ipdb
 *.lastbuildstate
+*.lib
 *.log
 *.metagen
 *.obj
