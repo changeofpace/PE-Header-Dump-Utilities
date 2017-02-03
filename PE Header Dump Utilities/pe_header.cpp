@@ -10,12 +10,12 @@ BOOL FillPEHeaderData(ULONG_PTR BaseAddress, OUT REMOTE_PE_HEADER_DATA& PEHeader
         return FALSE;
     PEHeader.baseAddress = BaseAddress;
     PEHeader.dosHeader = PIMAGE_DOS_HEADER(&PEHeader.rawData);
-    PEHeader.ntHeader = PIMAGE_NT_HEADERS(ULONG_PTR(PEHeader.dosHeader) + PEHeader.dosHeader->e_lfanew);
-    PEHeader.fileHeader = PIMAGE_FILE_HEADER(&PEHeader.ntHeader->FileHeader);
-    PEHeader.optionalHeader = PIMAGE_OPTIONAL_HEADER(&PEHeader.ntHeader->OptionalHeader);
+    PEHeader.ntHeaders = PIMAGE_NT_HEADERS(ULONG_PTR(PEHeader.dosHeader) + PEHeader.dosHeader->e_lfanew);
+    PEHeader.fileHeader = PIMAGE_FILE_HEADER(&PEHeader.ntHeaders->FileHeader);
+    PEHeader.optionalHeader = PIMAGE_OPTIONAL_HEADER(&PEHeader.ntHeaders->OptionalHeader);
     for (int i = 0; i < IMAGE_NUMBEROF_DIRECTORY_ENTRIES; i++)
-        PEHeader.dataDirectory[i] = &PEHeader.ntHeader->OptionalHeader.DataDirectory[i];
-    const ULONG_PTR firstSectionHeader = ULONG_PTR(IMAGE_FIRST_SECTION(PEHeader.ntHeader));
+        PEHeader.dataDirectory[i] = &PEHeader.ntHeaders->OptionalHeader.DataDirectory[i];
+    const ULONG_PTR firstSectionHeader = ULONG_PTR(IMAGE_FIRST_SECTION(PEHeader.ntHeaders));
     for (int i = 0; i < PEHeader.fileHeader->NumberOfSections; i++)
         PEHeader.sectionHeaders.push_back(PIMAGE_SECTION_HEADER(i * sizeof(IMAGE_SECTION_HEADER) + firstSectionHeader));
     return TRUE;

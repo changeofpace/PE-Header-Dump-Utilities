@@ -284,6 +284,12 @@
     <ClInclude Include="pe_header.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pe_data_to_string.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="pluginsdk\x32bridge.lib">
@@ -349,6 +355,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pe_header.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pe_data_to_string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

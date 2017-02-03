@@ -1,0 +1,166 @@
+[PE Header Dump Utilities] dumping kernel32 at 0000000077650000.
+===============================================================================
+DOS HEADER
+===============================================================================
+  e_magic:                                5A4D  MZ
+  e_cblp:                                   90
+  e_cp:                                      3
+  e_crlc:                                    0
+  e_cparhdr:                                 4
+  e_minalloc:                                0
+  e_maxalloc:                             FFFF
+  e_ss:                                      0
+  e_sp:                                     B8
+  e_csum:                                    0
+  e_ip:                                      0
+  e_cs:                                      0
+  e_lfarlc:                                 40
+  e_ovno:                                    0
+  e_res:                           00 00 00 00 
+  e_oemid:                                   0
+  e_oeminfo:                                 0
+  e_res2:        00 00 00 00 00 00 00 00 00 00 
+  e_lfanew:                                 E0  00000000776500E0
+===============================================================================
+NT HEADERS
+===============================================================================
+  Signature:                              4550  PE
+  FileHeader:                 00000000776500E4
+  OptionalHeader:             00000000776500F8
+===============================================================================
+FILE HEADER
+===============================================================================
+  Machine:                                8664  AMD64
+  NumberOfSections:                          6
+  TimeDateStamp:                      57FD0695  Tue Oct 11 11:34:45 2016
+  PointerToSymbolTable:                      0
+  NumberOfSymbols:                           0
+  SizeOfOptionalHeader:                     F0
+  Characteristics:                        2022  EXECUTABLE_IMAGE, LARGE_ADDRESS_AWARE, DLL
+===============================================================================
+OPTIONAL HEADER
+===============================================================================
+  Magic:                                   20B  HDR64
+  MajorLinkerVersion:                        9
+  MinorLinkerVersion:                        0
+  SizeOfCode:                            9B000
+  SizeOfInitializedData:                 81000
+  SizeOfUninitializedData:                   0
+  AddressOfEntryPoint:                   15340  0000000077665340
+  BaseOfCode:                             1000  0000000077651000
+  ImageBase:                  0000000077650000
+  SectionAlignment:                       1000
+  FileAlignment:                           200
+  MajorOperatingSystemVersion:               6
+  MinorOperatingSystemVersion:               1
+  MajorImageVersion:                         6
+  MinorImageVersion:                         1
+  MajorSubsystemVersion:                     6
+  MinorSubsystemVersion:                     1
+  Win32VersionValue:                         0
+  SizeOfImage:                          11F000
+  SizeOfHeaders:                           400
+  CheckSum:                             120CA2
+  Subsystem:                                 3  WINDOWS_CUI
+  DllCharacteristics:                      140  DYNAMIC_BASE, NX_COMPAT
+  SizeOfStackReserve:                    40000
+  SizeOfStackCommit:                      1000
+  SizeOfHeapReserve:                    100000
+  SizeOfHeapCommit:                       1000
+  LoaderFlags:                               0
+  NumberOfRvaAndSizes:                      10
+===============================================================================
+DATA DIRECTORIES
+===============================================================================
+  Name                     VA              RVA      Size
+-------------------------------------------------------------------------------
+  EXPORT            00000000776EFFFC     9FFFC      AD25
+  IMPORT            0000000077748BBC     F8BBC       1F4
+  RESOURCE          0000000077766000    116000       528
+  EXCEPTION         000000007775C000    10C000      9564
+  SECURITY          0000000000000000         0         0
+  BASERELOC         0000000077767000    117000      7AF4
+  DEBUG             00000000776EBEB8     9BEB8        38
+  ARCHITECTURE      0000000000000000         0         0
+  GLOBALPTR         0000000000000000         0         0
+  TLS               0000000000000000         0         0
+  LOAD_CONFIG       0000000000000000         0         0
+  BOUND_IMPORT      0000000000000000         0         0
+  IAT               00000000776EC000     9C000      1C90
+  DELAY_IMPORT      0000000000000000         0         0
+  COM_DESCRIPTOR    0000000000000000         0         0
+===============================================================================
+SECTIONS
+===============================================================================
+.text
+-------------------------------------------------------------------------------
+  VirtualSize:                           9AF19  9B000
+  VirtualAddress:                         1000  0000000077651000
+  SizeOfRawData:                         9B000
+  PointerToRawData:                        400
+  PointerToRelocations:                      0
+  PointerToLinenumbers:                      0
+  NumberOfRelocations:                       0
+  NumberOfLinenumbers:                       0
+  Characteristics:                    60000020  CNT_CODE, MEM_EXECUTE, MEM_READ
+-------------------------------------------------------------------------------
+.rdata
+-------------------------------------------------------------------------------
+  VirtualSize:                           6DD34  6E000
+  VirtualAddress:                        9C000  00000000776EC000
+  SizeOfRawData:                         6DE00
+  PointerToRawData:                      9B400
+  PointerToRelocations:                      0
+  PointerToLinenumbers:                      0
+  NumberOfRelocations:                       0
+  NumberOfLinenumbers:                       0
+  Characteristics:                    40000040  CNT_INITIALIZED_DATA, MEM_READ
+-------------------------------------------------------------------------------
+.data
+-------------------------------------------------------------------------------
+  VirtualSize:                            1980  2000
+  VirtualAddress:                       10A000  000000007775A000
+  SizeOfRawData:                          1600
+  PointerToRawData:                     109200
+  PointerToRelocations:                      0
+  PointerToLinenumbers:                      0
+  NumberOfRelocations:                       0
+  NumberOfLinenumbers:                       0
+  Characteristics:                    C0000040  CNT_INITIALIZED_DATA, MEM_READ, MEM_WRITE
+-------------------------------------------------------------------------------
+.pdata
+-------------------------------------------------------------------------------
+  VirtualSize:                            9564  A000
+  VirtualAddress:                       10C000  000000007775C000
+  SizeOfRawData:                          9600
+  PointerToRawData:                     10A800
+  PointerToRelocations:                      0
+  PointerToLinenumbers:                      0
+  NumberOfRelocations:                       0
+  NumberOfLinenumbers:                       0
+  Characteristics:                    40000040  CNT_INITIALIZED_DATA, MEM_READ
+-------------------------------------------------------------------------------
+.rsrc
+-------------------------------------------------------------------------------
+  VirtualSize:                             528  1000
+  VirtualAddress:                       116000  0000000077766000
+  SizeOfRawData:                           600
+  PointerToRawData:                     113E00
+  PointerToRelocations:                      0
+  PointerToLinenumbers:                      0
+  NumberOfRelocations:                       0
+  NumberOfLinenumbers:                       0
+  Characteristics:                    40000040  CNT_INITIALIZED_DATA, MEM_READ
+-------------------------------------------------------------------------------
+.reloc
+-------------------------------------------------------------------------------
+  VirtualSize:                            7AF4  8000
+  VirtualAddress:                       117000  0000000077767000
+  SizeOfRawData:                          7C00
+  PointerToRawData:                     114400
+  PointerToRelocations:                      0
+  PointerToLinenumbers:                      0
+  NumberOfRelocations:                       0
+  NumberOfLinenumbers:                       0
+  Characteristics:                    42000040  CNT_INITIALIZED_DATA, MEM_DISCARDABLE, MEM_READ
+-------------------------------------------------------------------------------
